@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz sobre Emulsões</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+            color: #333;
+        }
+        header {
+            background: linear-gradient(to right, #0077b6, #00b4d8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header img {
+            max-height: 60px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #0077b6;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .question p {
+            font-weight: bold;
+        }
+        .options label {
+            display: block;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        button {
+            background-color: #00b4d8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0077b6;
+        }
+        #result, #ranking {
+            margin-top: 30px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #0077b6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz sobre Emulsões</h1>
+    </header>
+    <div class="container">
+        <input type="text" id="username" placeholder="Digite seu nome para o ranking">
+        <form id="quizForm">
+            <!-- Questions will be inserted here by JavaScript -->
+        </form>
+        <button onclick="submitQuiz()">Enviar Respostas</button>
+        <div id="result"></div>
+        <div id="ranking">
+            <h2>Ranking dos 20 Melhores</h2>
+            <table id="rankingTable">
+                <thead>
+                    <tr><th>Nome</th><th>Pontuação</th><th>Data</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const questions = [
+            { q: "O que é uma emulsão?", a: "b", options: ["Mistura de sólidos", "Mistura de dois líquidos que não se combinam naturalmente", "Mistura de gases"] },
+            { q: "Qual ingrediente é essencial para manter a estabilidade de uma emulsão?", a: "b", options: ["Conservante", "Emulsificante", "Corante"] },
+            { q: "Qual tipo de emulsão é mais leve e usada em loções?", a: "b", options: ["A/O (Água em Óleo)", "O/A (Óleo em Água)", "Nenhuma das anteriores"] },
+            { q: "Qual fase geralmente contém água, glicerina e sais?", a: "b", options: ["Fase oleosa", "Fase aquosa", "Fase sólida"] },
+            { q: "Qual equipamento pode ser usado para agitar e formar uma emulsão?", a: "d", options: ["Hélice", "Turbina", "Âncora", "Todas as anteriores"] },
+            { q: "O leite materno é um exemplo de emulsão natural?", a: "a", options: ["Sim", "Não"] },
+            { q: "Qual dessas opções é uma emulsão caseira comum?", a: "b", options: ["Refrigerante", "Maionese", "Café"] },
+            { q: "O que pode indicar que uma emulsão está se separando?", a: "b", options: ["Textura uniforme", "Presença de bolhas de ar e pigmentos de tamanhos diferentes", "Cheiro forte"] },
+            { q: "Mais de quantos por cento dos produtos cosméticos são emulsões?", a: "c", options: ["30%", "50%", "70%"] },
+            { q: "Qual é a função do cisalhamento no processo de emulsificação?", a: "b", options: ["Colorir o produto", "Misturar os ingredientes com força para formar a emulsão", "Esfriar a mistura"] }
+        ];
+
+        const form = document.getElementById("quizForm");
+        questions.forEach((q, i) => {
+            const div = document.createElement("div");
+            div.className = "question";
+            div.innerHTML = `<p>${i+1}. ${q.q}</p>`;
+            const opts = document.createElement("div");
+            opts.className = "options";
+            q.options.forEach((opt, j) => {
+                const letter = String.fromCharCode(97 + j);
+                opts.innerHTML += `<label><input type="radio" name="q${i}" value="${letter}"> ${opt}</label>`;
+            });
+            div.appendChild(opts);
+            form.appendChild(div);
+        });
+
+        function submitQuiz() {
+            const username = document.getElementById("username").value.trim();
+            if (!username) {
+                alert("Por favor, digite seu nome.");
+                return;
+            }
+
+            let score = 0;
+            questions.forEach((q, i) => {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected && selected.value === q.a) score++;
+            });
+
+            document.getElementById("result").innerHTML = `<h2>Você acertou ${score} de ${questions.length} perguntas!</h2>`;
+            saveRanking(username, score);
+            showRanking();
+        }
+
+        function saveRanking(name, score) {
+            const ranking = JSON.parse(localStorage.getItem("quizRanking") || "[]");
+            ranking.push({ name, score, date: new Date().toLocaleString() });
+            ranking.sort((a,b) => b.score - a.score);
+            localStorage.setItem("quizRanking", JSON.stringify(ranking.slice(0,20)));
+        }
+
+        function showRanking() {
+            const ranking = JSON.parse(localStorage.getItem("quizRanking") || "[]");
+            const tbody = document.querySelector("#rankingTable tbody");
+            tbody.innerHTML = "";
+            ranking.forEach(r => {
+                const row = `<tr><td>${r.name}</td><td>${r.score}</td><td>${r.date}</td></tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        showRanking();
+    </script>
+</body>
+</html>
